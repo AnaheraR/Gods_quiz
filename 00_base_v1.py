@@ -35,7 +35,7 @@ class Start:
                                   "of questions you'd like to answer...\n"
         self.choose_instructions_label = Label(self.start_frame,
                                                text=choose_instructions_txt,
-                                               wraplength=380, justify="left")
+                                               wraplength=390, justify="left")
         self.choose_instructions_label.grid(row=1)
 
         self.questions_choice_frame = Frame(self.start_frame)
@@ -55,10 +55,11 @@ class Start:
                                    width=12, command=self.to_enter)
         self.enter_button.grid(row=0, column=1, padx=10, pady=10)
 
-    def check_rounds(self, min_rounds):
+    def check_rounds(self, min_quest, max_quest):
 
         has_error = "No"
-        error = f"Please enter more than {min_rounds} round"
+        error = f"Please enter more than {min_quest} and less than {max_quest} questions.\n" \
+                f"No, letters, underscores, spaces, decimals, etc."
 
         # Check that a valid number has been entered
 
@@ -67,7 +68,9 @@ class Start:
         try:
             response = int(response)
 
-            if response < min_rounds:
+            if response < min_quest:
+                has_error = "yes"
+            elif response > max_quest:
                 has_error = "yes"
 
         except ValueError:
@@ -88,7 +91,7 @@ class Start:
 
     def to_enter(self):
 
-        to_questions = self.check_rounds(1)
+        to_questions = self.check_rounds(1, 50)
 
         if to_questions != "invalid":
             self.var_feedback.set("Questions will now start".format(to_questions))

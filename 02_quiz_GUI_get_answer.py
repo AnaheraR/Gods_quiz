@@ -33,18 +33,24 @@ class Quiz:
         self.var_has_error = StringVar()
         self.var_has_error.set("no")
 
+        # stores the god information
+        self.god_variable = StringVar()
+        self.god_variable.set("")
+
         # variables used to work out statistics, when game ends etc
         self.quest_wanted = IntVar()
         self.quest_wanted.set(rounds_choice)
 
-        # initially set rounds played and rounds won to 0
+        # questions completed
         self.quest_complete = IntVar()
         self.quest_complete.set(0)
 
         self.correct_ans = []
+        self.incorrect_ans = []
 
         # get all the gods info for use in this quiz
         self.gods_info = self.get_gods_info()
+        print(self.gods_info)
 
         self.quiz_frame = Frame(self.quiz_box, padx=10, pady=10)
         self.quiz_frame.grid()
@@ -55,21 +61,29 @@ class Quiz:
                                     )
         self.naming_heading.grid(row=0)
 
+        # get god/goddesses info for first round...
         self.god_info_list = []
+
+        # list to hold references for god/goddesses info
+        # so that it can be configured for new rounds etc
         self.god_info_ref = []
 
-        self.god_info = Label(self.quiz_frame, width=35, height=2,
-                              text="Who is the {} god of {}",
+        for item in range(0, 3):
+
+            gods_questions = f"Who is the {self.gods_info[item][0]} god of {self.gods_info[item][3]}"
+            self.god_naming_info = Label(self.quiz_frame, width=35, height=2, text=gods_questions,
                               fg="#000000", bg="#BAC8D3",
                               font=("Georgia", "13"))
-        self.god_info_ref.append(self.god_info)
-        self.god_info.grid(row=1, padx=20, pady=10)
 
-        self.attempts_label = Label(self.quiz_frame, text="You get three attempts before "
-                                                          "you must move on.",
-                                    font=("Georgia", "10", "bold")
-                                    )
-        self.attempts_label.grid(row=2)
+            self.god_info_ref.append(self.god_naming_info)
+
+        self.god_naming_info.grid(row=1, padx=20, pady=10)
+
+        # self.attempts_label = Label(self.quiz_frame, text="You get three attempts before "
+        #                                                  "you must move on.",
+        #                            font=("Georgia", "10", "bold")
+        #                            )
+        # self.attempts_label.grid(row=2)
 
         self.guess_frame = Frame(self.quiz_frame)
         self.guess_frame.grid(row=3)
@@ -81,7 +95,7 @@ class Quiz:
         self.next_enter_button = Button(self.guess_frame, text="Enter",
                                         bg="#FFE6CC", fg="#000000",
                                         font=("Georgia", "13", "bold"),
-                                        width=12)
+                                        width=12, command=self.to_compare)
         self.next_enter_button.grid(row=0, column=1, padx=10, pady=10)
 
         self.next_question()
@@ -117,6 +131,7 @@ class Quiz:
             self.control_button_ref.append(self.make_control_button)
 
     def get_gods_info(self):
+
         file = open("gods.csv", "r")
         var_all_gods = list(csv.reader(file, delimiter=","))
         file.close()
@@ -127,15 +142,15 @@ class Quiz:
     def get_quest_gods(self):
         god_quest_list = []
 
-        # get six unique colours
+        # get a god
         while len(god_quest_list) < 1:
             # Choose item
             chosen_god = random.choice(self.gods_info)
             index_chosen = self.gods_info.index(chosen_god)
 
             # check score is not already in list
-            if chosen_god[1]:
-                # add item to rounds list
+            if chosen_god[2]:
+                # add item to quest list
                 god_quest_list.append(chosen_god)
 
                 # remove item from master list
@@ -145,18 +160,19 @@ class Quiz:
 
     def next_question(self):
 
-        # empty button list so we can get new colours
+        # empty list so we can get a new god
         self.god_info_list.clear()
 
-        # get new colours for buttons
+        # get new gods for question
         self.god_info_list = self.get_quest_gods()
 
-        count = 0
-        for item in self.god_info_ref:
-            item['god_origin'] = self.god_info_list[count][0]
-            item['god_ruling'] = self.god_info_list[count][3]
+        # count = 0
+        # for item in self.god_info_ref:
+        #     item['text'] = self.god_info_list[count][3]
+        #
+        # count += 1
 
-        # retrieve number of rounds wanted / played
+        # retrieve number of questions wanted / played
         # and update heading.
         rounds_choice = self.quest_wanted.get()
         current_quest = self.quest_complete.get()
@@ -164,18 +180,29 @@ class Quiz:
                       "{}".format(current_quest + 1, rounds_choice)
         self.naming_heading.config(text=new_heading)
 
-    def check_answer(self, user_choice):
+    def to_compare(self):
 
         rounds_choice = self.quest_wanted.get()
 
+        # add one to number of rounds played
         current_quest = self.quest_complete.get()
         current_quest += 1
         self.quest_complete.set(current_quest)
 
-        to_remove = self.god_info_list.index(user_choice)
-        self.god_info_list.pop(to_remove)
+        print("Current Question", current_quest)
 
+        # set up background colours
+        correct_colour = "#D5E8D4"
+        incorrect_colour = "#F8CECC"
 
+        # user_correct_ans = ""
+        # self.correct_ans.append(user_correct_ans)
+        #
+        # user_incorrect_ans = ""
+        # self.incorrect_ans.append(user_incorrect_ans)
+
+        # to_remove = self.god_info_list.index()
+        # self.god_info_list.pop(to_remove)
 
     @staticmethod
     def answer_error(answer):
@@ -200,15 +227,6 @@ class Quiz:
             problem = "{}.  Use letters only.".format(problem)
 
         return problem
-
-    def to_next_quest(self):
-
-        to_next_question = self.answer_error()
-
-        if to_next_question != "problem":
-            self.var_feedback.set("Questions will now start".format(to_next_question))
-
-        self.answer_error()
 
     def to_do(self, action):
         if action == "get help":
