@@ -45,12 +45,11 @@ class Quiz:
         self.quest_complete = IntVar()
         self.quest_complete.set(0)
 
-        self.correct_ans = []
-        self.incorrect_ans = []
+        # self.correct_ans = []
+        # self.incorrect_ans = []
 
         # get all the gods info for use in this quiz
         self.gods_info = self.get_gods_info()
-        print(self.gods_info)
 
         self.quiz_frame = Frame(self.quiz_box, padx=10, pady=10)
         self.quiz_frame.grid()
@@ -64,19 +63,10 @@ class Quiz:
         # get god/goddesses info for first round...
         self.god_info_list = []
 
-        # list to hold references for god/goddesses info
-        # so that it can be configured for new rounds etc
-        self.god_info_ref = []
-
-        for item in range(0, 3):
-
-            gods_questions = f"Who is the {self.gods_info[item][0]} god of {self.gods_info[item][3]}"
-            self.god_naming_info = Label(self.quiz_frame, width=35, height=2, text=gods_questions,
-                              fg="#000000", bg="#BAC8D3",
-                              font=("Georgia", "13"))
-
-            self.god_info_ref.append(self.god_naming_info)
-
+        self.god_naming_info = Label(self.quiz_frame, width=45, height=2,
+                                     fg="#000000", bg="#BAC8D3",
+                                     font=("Georgia", "13")
+                                     )
         self.god_naming_info.grid(row=1, padx=20, pady=10)
 
         # self.attempts_label = Label(self.quiz_frame, text="You get three attempts before "
@@ -85,6 +75,7 @@ class Quiz:
         #                            )
         # self.attempts_label.grid(row=2)
 
+        # frame for the user to make and enter their guess
         self.guess_frame = Frame(self.quiz_frame)
         self.guess_frame.grid(row=3)
 
@@ -95,17 +86,26 @@ class Quiz:
         self.next_enter_button = Button(self.guess_frame, text="Enter",
                                         bg="#FFE6CC", fg="#000000",
                                         font=("Georgia", "13", "bold"),
-                                        width=12, command=self.to_compare)
+                                        width=12, command=self.next_question)
         self.next_enter_button.grid(row=0, column=1, padx=10, pady=10)
 
+        # at the start get a 'new question'
         self.next_question()
 
+        # feedback label under the entry box that lets the user know if there's any errors
         self.answer_feedback_label = Label(self.guess_frame,
                                            text="",
                                            fg="#9c0000",
                                            wraplength=300,
                                            font=("Georgia", "10",))
-        self.answer_feedback_label.grid(row=1)
+        self.answer_feedback_label.grid(row=1, column=0, padx=20, pady=10)
+
+        self.correct_answer_label = Label(self.guess_frame,
+                                          text="Correct: {} \t Incorrect: {}",
+                                          fg="#000000", bg="#BAC8D3",
+                                          wraplength=300,
+                                          font=("Georgia", "10",))
+        self.correct_answer_label.grid(row=1, column=1, padx=20, pady=10)
 
         self.control_frame = Frame(self.quiz_frame)
         self.control_frame.grid(row=4)
@@ -141,20 +141,23 @@ class Quiz:
 
     def get_quest_gods(self):
         god_quest_list = []
-
+        completed_quest = []
         # get a god
         while len(god_quest_list) < 1:
             # Choose item
             chosen_god = random.choice(self.gods_info)
             index_chosen = self.gods_info.index(chosen_god)
 
-            # check score is not already in list
-            if chosen_god[2]:
+            # check god has not been given
+            if chosen_god[2] not in completed_quest:
                 # add item to quest list
                 god_quest_list.append(chosen_god)
+                completed_quest.append(chosen_god[2])
 
                 # remove item from master list
                 self.gods_info.pop(index_chosen)
+
+        print("god quest list", god_quest_list)
 
         return god_quest_list
 
@@ -166,60 +169,42 @@ class Quiz:
         # get new gods for question
         self.god_info_list = self.get_quest_gods()
 
-        # count = 0
-        # for item in self.god_info_ref:
-        #     item['text'] = self.god_info_list[count][3]
-        #
-        # count += 1
+        for item in range(1):
+            gods_questions = f"Who is the {self.god_info_list[item][0]} god of {self.god_info_list[item][3]}"
+            self.god_naming_info.config(text=gods_questions)
 
         # retrieve number of questions wanted / played
         # and update heading.
         rounds_choice = self.quest_wanted.get()
         current_quest = self.quest_complete.get()
-        new_heading = "Choose - Round {} of " \
-                      "{}".format(current_quest + 1, rounds_choice)
-        self.naming_heading.config(text=new_heading)
-
-    def to_compare(self):
-
-        rounds_choice = self.quest_wanted.get()
-
-        # add one to number of rounds played
-        current_quest = self.quest_complete.get()
         current_quest += 1
         self.quest_complete.set(current_quest)
+        new_heading = "Choose - Round {} of " \
+                      "{}".format(current_quest, rounds_choice)
+        self.naming_heading.config(text=new_heading)
 
-        print("Current Question", current_quest)
+        if current_quest == rounds_choice:
+            # change 'next' button to show overall
+            # win / loss result and disable it
+            self.next_enter_button.config(state=DISABLED)
 
-        # set up background colours
-        correct_colour = "#D5E8D4"
-        incorrect_colour = "#F8CECC"
-
-        # user_correct_ans = ""
-        # self.correct_ans.append(user_correct_ans)
-        #
-        # user_incorrect_ans = ""
-        # self.incorrect_ans.append(user_incorrect_ans)
-
-        # to_remove = self.god_info_list.index()
-        # self.god_info_list.pop(to_remove)
+        else:
+            # enable next round button and update heading
+            self.next_enter_button.config(state="normal")
 
     @staticmethod
     def answer_error(answer):
         problem = ""
 
         # regular expression to check filename is valid
-        valid_char = "[A-Za-z]"
+        valid_char = "[A-Za-z ]"
 
         # iterates through filename and checks each letter.
         for letter in answer:
             if re.match(valid_char, letter):
                 continue
 
-            elif letter == " ":
-                problem = "Sorry, no spaces allowed"
-
-            else:
+            elif letter:
                 problem = ("Sorry, no {}'s allowed".format(letter))
             break
 
