@@ -9,7 +9,7 @@ class Start:
 
     def __init__(self):
         # invoke play class with three rounds for testing purposes
-        self.to_quiz(3)
+        self.to_quiz(5)
 
     def to_quiz(self, num_rounds):
         Quiz(num_rounds)
@@ -47,8 +47,11 @@ class Quiz:
 
         # lists to hold users correct and incorrect answers and
         # used to work out statistics
-        self.correct_ans = []
-        self.incorrect_ans = []
+        # self.user_correct_ans = []
+        # self.user_incorrect_ans = []
+
+        self.correct_ans = 0
+        self.incorrect_ans = 0
 
         # get all the gods info for use in this quiz
         self.gods_info = self.get_gods_info()
@@ -94,23 +97,15 @@ class Quiz:
         # at the start get a 'new question'
         self.next_question()
 
-        # feedback label under the entry box that lets the user know if there's any errors
-        self.answer_feedback_label = Label(self.guess_frame,
-                                           text="",
-                                           fg="#9c0000",
-                                           wraplength=300,
-                                           font=("Georgia", "10",))
-        self.answer_feedback_label.grid(row=1, column=0, padx=20, pady=10)
-
-        self.correct_answer_label = Label(self.guess_frame,
-                                          text="Correct:  \t Incorrect: ",
+        self.correct_answer_label = Label(self.quiz_frame,
+                                          text="Correct: 0 \t Incorrect: 0",
                                           fg="#000000", bg="#BAC8D3",
-                                          wraplength=300,
+                                          wraplength=300, width=55,
                                           font=("Georgia", "10",))
-        self.correct_answer_label.grid(row=1, column=1, padx=20, pady=10)
+        self.correct_answer_label.grid(row=4, padx=20, pady=10)
 
         self.control_frame = Frame(self.quiz_frame)
-        self.control_frame.grid(row=4)
+        self.control_frame.grid(row=5)
 
         control_buttons = [
             ["#B0E3E6", "Help", "get help"],
@@ -131,6 +126,11 @@ class Quiz:
 
             # add buttons to control list
             self.control_button_ref.append(self.make_control_button)
+
+        # disable stats button
+        self.to_help_btn = self.control_button_ref[0]
+        self.to_stats_btn = self.control_button_ref[1]
+        self.to_stats_btn.config(state=DISABLED)
 
     def get_gods_info(self):
 
@@ -170,11 +170,8 @@ class Quiz:
         self.god_info_list = self.get_quest_gods()
 
         for item in range(1):
-            gods_questions = f"Who is the {self.god_info_list[item][0]} god of {self.god_info_list[item][3]}"
+            gods_questions = f"Who is the {self.god_info_list[item][0]} god/goddess of {self.god_info_list[item][3]}"
             self.god_naming_info.config(text=gods_questions)
-
-        correct_ans = self.god_info_list[0][2]
-        print("The correct answer is", correct_ans)
 
         # retrieve number of questions wanted / played
         # and update heading.
@@ -192,20 +189,32 @@ class Quiz:
         incorrect_colour = "#F8CECC"
 
         # picked_right = self.correct_ans
+        correct_ans = int(self.correct_ans)
+        incorrect_ans = int(self.incorrect_ans)
 
-        user_ans = self.answer_entry.get()
-        correct_answer = self.god_info_list[0][2]
+        user_ans = self.answer_entry.get().lower()
+        print("You answered", user_ans)
+        correct_answer = self.god_info_list[0][2].lower()
+        print("The correct answer is", correct_answer)
+
         rounds_choice = self.quest_wanted.get()
         current_quest = self.quest_complete.get()
 
         end_quiz_label = "Choose - Question {} of {}".format(rounds_choice, rounds_choice)
 
         if user_ans == correct_answer:
-            self.correct_answer_label.config(bg=correct_colour)
+            self.correct_answer_label.config(bg=correct_colour, text=f"Correct: {correct_ans + 1} \t "
+                                                                     f"Incorrect: {incorrect_ans}")
+            self.correct_ans += 1
         else:
-            self.correct_answer_label.config(bg=incorrect_colour)
+            self.correct_answer_label.config(bg=incorrect_colour, text=f"Correct: {correct_ans} \t "
+                                                                       f"Incorrect: {incorrect_ans + 1}")
+            self.incorrect_ans += 1
 
         self.next_question()
+
+        # enable stats button (as we now have at least one question complete)
+        self.to_stats_btn.config(state=NORMAL)
 
         # quest_outcome_txt = "Correct: {} \t Incorrect: {}".format(picked_right)
         # self.correct_answer_label.config(text=quest_outcome_txt)
@@ -222,27 +231,6 @@ class Quiz:
         else:
             # enable next round button and update heading
             self.next_enter_button.config(state="normal")
-
-    @staticmethod
-    def answer_error(answer):
-        problem = ""
-
-        # regular expression to check entry is valid
-        valid_char = "[A-Za-z ]"
-
-        # iterates through entry and checks each letter.
-        for letter in answer:
-            if re.match(valid_char, letter):
-                continue
-
-            elif letter:
-                problem = ("Sorry, no {}'s allowed".format(letter))
-            break
-
-        if problem != "":
-            problem = "{}.  Use letters only.".format(problem)
-
-        return problem
 
     def to_do(self, action):
         if action == "get help":
