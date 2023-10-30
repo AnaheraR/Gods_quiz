@@ -121,7 +121,7 @@ class Start:
 
 class Quiz:
 
-    def __init__(self, rounds_choice):
+    def __init__(self, num_rounds):
         self.quiz_box = Toplevel()
         # if users press cross at top, closes
         # the box
@@ -131,7 +131,7 @@ class Quiz:
         self.quiz_frame = Frame(self.quiz_box, padx=10, pady=10)
         self.quiz_frame.grid()
 
-        rounds_heading = "Name? - Question 1 of {}".format(rounds_choice)
+        rounds_heading = "Name? - Question 1 of {}".format(num_rounds)
         self.naming_heading = Label(self.quiz_frame, text=rounds_heading,
                                     font=("Georgia", "16", "bold")
                                     )

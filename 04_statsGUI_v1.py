@@ -24,9 +24,9 @@ class Quiz:
 
         self.quiz_box = Toplevel()
 
-        self.god_ruling_given = ['harvest', 'procreation', 'prosperity', 'love', 'sleep']
-        self.player_answer = ['my ancestor', 'my step mother', 'Alice', 'cupid', 'somnus']
-        self.correct_god = ['ceres', 'phanes', 'abundantia', 'cupid', 'somnus']
+        self.god_ruling_given = ["harvest", "procreation", "prosperity", "love", "sleep"]
+        self.player_answer = ["my ancestor", "my step mother", "Alice", "cupid", "somnus"]
+        self.correct_god = ["ceres", "phanes", "abundantia", "cupid", "somnus"]
 
         self.quiz_frame = Frame(self.quiz_box, padx=10, pady=10)
         self.quiz_frame.grid()
@@ -36,7 +36,7 @@ class Quiz:
 
         control_buttons = [
             ["#B0E3E6", "Help", "get help"],
-            ["#B1E7D0", "Statistics", "get stats"],
+            ["#B1E7D0", "Quest Hist", "get stats"],
             ["#E0B1E7", "Start Over", "start over"]
         ]
 
@@ -65,7 +65,7 @@ class Quiz:
         if action == "get help":
             pass
         elif action == "get stats":
-            DisplayStats(self, self.god_ruling_given, self.player_answer, self.correct_god)
+            DisplayHist(self, self.god_ruling_given, self.player_answer, self.correct_god)
         else:
             self.close_play()
 
@@ -75,12 +75,17 @@ class Quiz:
 
 
 # show users their statistics
-class DisplayStats:
+class DisplayHist:
 
     def __init__(self, partner, god_ruling_given, player_answer, correct_god):
 
         # setup dialogue box and background colour
         self.stats_box = Toplevel()
+
+        # question_num = 1
+        # god_question = ""
+        # for item in player_answer:
+        #     god_question += f"Quest"
 
         stats_bg_colour = "#B1E7D0"
 
@@ -97,39 +102,48 @@ class DisplayStats:
         self.stats_frame.grid()
 
         self.help_heading_label = Label(self.stats_frame, bg=stats_bg_colour,
-                                        text="Statistics",
+                                        text="Question History",
                                         font=("Arial", "14", "bold"))
         self.help_heading_label.grid(row=0)
 
-        stats_text = "Here are your game statistics"
+        stats_text = "Here is your question history"
         self.stats_text_label = Label(self.stats_frame, bg=stats_bg_colour,
                                       text=stats_text, wraplength=350,
-                                      justify="left")
+                                      justify="center")
         self.stats_text_label.grid(row=1, padx=10)
+
+        table_heading_txt = "Quest no.     Player answer\t   Correct answer"
+        self.table_heading = Label(self.stats_frame, bg="#BFFAE1",
+                                   text=table_heading_txt, wraplength=280,
+                                   justify="center")
+        self.table_heading.grid(row=2, padx=10)
 
         # frame to hold statistics 'table'
         self.data_frame = Frame(self.stats_frame, bg=stats_bg_colour,
                                 borderwidth=1, relief="solid")
-        self.data_frame.grid(row=2, padx=10, pady=10)
+        self.data_frame.grid(row=4, padx=10, pady=10)
 
         # get statistics for the player
-        self.god_stats = self.get_stats(god_ruling_given)
-        self.player_stats = self.get_stats(player_answer)
-        self.correct_answer_stats = self.get_stats(correct_god)
+        # self.god_stats = self.get_stats(god_ruling_given, "God ruling")
+        self.player_stats = self.get_stats(player_answer, "Player answer")
+        self.correct_answer_stats = self.get_stats(correct_god, "Correct answer")
 
         # background formatting 
         table_top = "#BFFAE1"
+        row_1 = "#BFFAE1"
+        row_2 = "#BFFAE1"
 
-        row_formats = [table_top]
+        row_formats = [table_top, row_1, row_2, row_1, row_2]
 
         # data for labels (one label / sub list)
         all_labels = []
 
         count = 0
-        for item in range(0, len(self.god_stats)):
-            all_labels.append([self.god_stats[item], row_formats[count]])
-            all_labels.append([self.player_stats[item], row_formats[count]])
-            all_labels.append([self.correct_answer_stats[item], row_formats[count]])
+        for item in range(0, len(self.player_stats)):
+            all_labels.append([f"Question {count + 1}", row_formats[count]])
+            # all_labels.append([self.player_stats[item], row_formats[count]])
+            all_labels.append([player_answer[item], row_formats[count]])
+            all_labels.append([correct_god[item], row_formats[count]])
             count += 1
 
         # create labels based on list above
@@ -146,12 +160,16 @@ class DisplayStats:
                                      fg="#FFFFFF",
                                      command=partial(self.close_stats,
                                                      partner))
-        self.dismiss_button.grid(row=3, padx=10, pady=10)
+        self.dismiss_button.grid(row=5, padx=10, pady=10)
 
     @staticmethod
-    def get_stats(entity):
+    def get_stats(stats_list, entity):
+        quest_1 = str(stats_list)
+        quest_2 = str(stats_list)
+        quest_3 = str(stats_list)
+        quest_4 = str(stats_list)
 
-        return [entity]
+        return [entity, quest_1, quest_2, quest_3, quest_4]
 
     def close_stats(self, partner):
         partner.to_stats_btn.config(state="normal")
